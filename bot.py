@@ -35,6 +35,7 @@ async def on_guild_join(guild):
 
 
 @client.command()
+@discord.ext.commands.has_permissions(administrator = True)
 # @commands.is_owner()
 async def channel(ctx, text_channel: discord.TextChannel):
     # print(ctx.guild)
@@ -102,7 +103,7 @@ async def startRegister(ctx, tourneyName: str):
     else:
         embed = discord.Embed(
             title="Please first close the running tournament",
-            description=f"A tournament {thisServer['tourney_name']} is already running on this server, please stop it first to start a new one."
+            description=f"A tournament **{thisServer['tourney_name']}** is already running on this server, please stop it first to start a new one."
                         f"\nStop using p!stopTourney",
             color=discord.Color.gold()
         )
@@ -129,11 +130,12 @@ async def stopTourney(ctx):
     else:
         embed = discord.Embed(
             title = "Tourney stopped:(",
-            description = f"The tourney {thisServer['tourney_name']} has been stopped.",
+            description = f"The tourney **{thisServer['tourney_name']}** has been stopped.",
             color = discord.Color.red()
         )
         embed.set_author(name = botName)
         servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name" : "--"}})
+        participantsList.delete_one({"server": ctx.guild.id})
         await text_channel.send(embed = embed)
 
 @client.command()
@@ -189,7 +191,7 @@ async def registerMe(ctx, seed: int):
 
     for x in participantsListTemp["contestants"]:
         # print(x)
-        if x == ctx.author.id:
+        if x['id'] == ctx.author.id:
             embed = discord.Embed(
                 title="Already Registered",
                 description=f"{ctx.author.mention} you are already registered, please wait till tournament"
