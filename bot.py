@@ -236,19 +236,24 @@ async def unregisterMe(ctx):
 
     # print(participantsListTemp["contestants"])
 
-    for x in participantsListTemp["contestants"]:
-        # print(x)
-        if x["id"] == ctx.author.id:
-            # print(x)
-            participantsList.delete_one({"server": ctx.guild.id})
-            embed = discord.Embed(
-                title="Unregistered",
-                description=f"{ctx.author.mention} you are now unregistered.",
-                color=discord.Color.gold()
-            )
-            embed.set_author(name=botName)
-            await text_channel.send(embed=embed)
-            return
+    found = False
+    ix = 0
+    for i in range(len(participantsListTemp["contestants"])):
+        if participantsListTemp["contestants"][i]["id"] == ctx.author.id:
+            found = True
+            ix = i
+        
+    if found:
+        participantsList.delete_one({"server": ctx.guild.id})
+        participantsList.insert_one({"server": ctx.guild.id, "contestants": participantsListTemp["contestants"][:ix] + participantsListTemp["contestants"][ix + 1:]})
+        embed = discord.Embed(
+            title="Unregistered",
+            description=f"{ctx.author.mention} you are now unregistered.",
+            color=discord.Color.gold()
+        )
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+        return
 
 
 
