@@ -1,4 +1,5 @@
 import discord
+import Tillucode as tree
 from discord.ext import commands
 from pymongo import MongoClient
 
@@ -140,6 +141,27 @@ async def stopTourney(ctx):
         servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name": "--"}})
         participantsList.delete_one({"server": ctx.guild.id})
         await text_channel.send(embed=embed)
+
+
+@client.command()
+@commands. has_role('Tourney Manager')
+async def startTourney(ctx):
+    thisServer = servers.find_one({"_id": ctx.guild.id})
+    text_channel_n = thisServer["text_channel"]
+    global text_channel
+    for x in ctx.guild.text_channels:
+        if x.id == text_channel_n:
+            text_channel = x
+
+    if thisServer["tourney_name"] == "--":
+        embed = discord.Embed(
+            title = "No Tourney registered",
+            description = "No tourney is currently started for registration on this server. ",
+            color = discord.Color.gold()
+        )
+        await text_channel.send(embed = embed)
+    else:
+        #Harsh sir please guide
 
 
 @client.command()
