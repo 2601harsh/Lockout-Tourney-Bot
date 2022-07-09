@@ -3,7 +3,7 @@ from discord.ext import commands
 from pymongo import MongoClient
 
 uri = "mongodb+srv://abhinav:sogya@cluster0.mmjoj3r.mongodb.net/discord-bot?retryWrites=true&w=majority"
-token = "OTk0OTUyMTIxODMxMTQ1NTUy.GDWeVI.QqszenD7JLBiR9VD4x9Ad01ifV43wJxjYqwSLI"
+token = "OTk0OTUyMTIxODMxMTQ1NTUy.GUSuq6.Pgsl6ma0FqQ2TmP4pgShJxBfAqsGDKvGWaHW_M"
 
 cluster = MongoClient(uri)
 
