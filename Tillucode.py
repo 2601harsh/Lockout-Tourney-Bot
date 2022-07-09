@@ -59,4 +59,3 @@ def modify_winner(p1,p2,winner):
         play[(t1,t2)]=temp2
         temp.p1=None
         temp.p2=None
- 
