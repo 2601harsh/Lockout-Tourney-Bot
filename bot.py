@@ -1,4 +1,5 @@
 import discord
+import Tillucode as tree
 from discord.ext import commands
 from pymongo import MongoClient
 
@@ -18,13 +19,14 @@ client = commands.Bot(command_prefix="p!", intents=intents)
 
 botName = "Lockout Bot"
 
+
 @client.event
 async def on_guild_join(guild):
     res = servers.find_one({"_id": guild.id})
     if res is None:
         # print(guild)
         text_channel = guild.text_channels[0]
-        servers.insert_one({"_id": guild.id,"text_channel": text_channel.id, "tourney_name": "--", "lockout_bot": 0})
+        servers.insert_one({"_id": guild.id, "text_channel": text_channel.id, "tourney_name": "--", "lockout_bot": 0})
         embed = discord.Embed(
             title="welcome to Lockout Bot",
             description="ThankYou for adding Lockout Bot to your server",
@@ -35,20 +37,20 @@ async def on_guild_join(guild):
 
 
 @client.command()
-@discord.ext.commands.has_permissions(administrator = True)
+@commands. has_role('Tourney Manager')
 # @commands.is_owner()
 async def channel(ctx, text_channel: discord.TextChannel):
     # print(ctx.guild)
     global prev_channel
-    prev=servers.find_one({"_id": ctx.guild.id})["text_channel"]
+    prev = servers.find_one({"_id": ctx.guild.id})["text_channel"]
     servers.update_one({"_id": ctx.guild.id}, {"$set": {"text_channel": text_channel.id}})
     for x in ctx.guild.text_channels:
         if x.id == prev:
             prev_channel = x
 
-    servers.find_one({"_id": ctx.guild.id})["text_channel"]=text_channel.id
+    servers.find_one({"_id": ctx.guild.id})["text_channel"] = text_channel.id
 
-    if prev == text_channel.id :
+    if prev == text_channel.id:
         embed = discord.Embed(
             title="Channel Changed",
             description=f"I am already in that channel",
@@ -72,16 +74,17 @@ async def channel(ctx, text_channel: discord.TextChannel):
     await text_channel.send(embed=embed)
     await prev_channel.send(embed=embed2)
 
-async def get_person_from_id (server, id):
+
+async def get_person_from_id(server, id):
     for x in server.users:
         if x.id == id:
             return x
 
     return server.users[0]
 
+
 @client.command()
-@discord.ext.commands.has_permissions(administrator = True)
-#@commands.is_owner()
+@commands. has_role('Tourney Manager')
 async def startRegister(ctx, tourneyName: str):
     thisServer = servers.find_one({"_id": ctx.guild.id})
     text_channel_n = thisServer["text_channel"]
@@ -110,8 +113,9 @@ async def startRegister(ctx, tourneyName: str):
         embed.set_author(name=botName)
         await text_channel.send(embed=embed)
 
+
 @client.command()
-@discord.ext.commands.has_permissions(administrator = True)
+@commands. has_role('Tourney Manager')
 async def stopTourney(ctx):
     thisServer = servers.find_one({"_id": ctx.guild.id})
     text_channel_n = thisServer["text_channel"]
@@ -122,24 +126,46 @@ async def stopTourney(ctx):
 
     if thisServer["tourney_name"] == "--":
         embed = discord.Embed(
-            title = "No Tourney running",
-            description = "No tourney is currently running on this server.",
+            title="No Tourney running",
+            description="No tourney is currently running on this server.",
+            color=discord.Color.gold()
+        )
+        await text_channel.send(embed=embed)
+    else:
+        embed = discord.Embed(
+            title="Tourney stopped:(",
+            description=f"The tourney **{thisServer['tourney_name']}** has been stopped.",
+            color=discord.Color.red()
+        )
+        embed.set_author(name=botName)
+        servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name": "--"}})
+        participantsList.delete_one({"server": ctx.guild.id})
+        await text_channel.send(embed=embed)
+
+
+@client.command()
+@commands. has_role('Tourney Manager')
+async def startTourney(ctx):
+    thisServer = servers.find_one({"_id": ctx.guild.id})
+    text_channel_n = thisServer["text_channel"]
+    global text_channel
+    for x in ctx.guild.text_channels:
+        if x.id == text_channel_n:
+            text_channel = x
+
+    if thisServer["tourney_name"] == "--":
+        embed = discord.Embed(
+            title = "No Tourney registered",
+            description = "No tourney is currently started for registration on this server. ",
             color = discord.Color.gold()
         )
         await text_channel.send(embed = embed)
     else:
-        embed = discord.Embed(
-            title = "Tourney stopped:(",
-            description = f"The tourney **{thisServer['tourney_name']}** has been stopped.",
-            color = discord.Color.red()
-        )
-        embed.set_author(name = botName)
-        servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name" : "--"}})
-        participantsList.delete_one({"server": ctx.guild.id})
-        await text_channel.send(embed = embed)
+        #Harsh sir please guide
+
 
 @client.command()
-@discord.ext.commands.has_permissions(administrator = True)
+@commands. has_role('Tourney Manager')
 async def registerLockoutBot(ctx, mention: str):
     thisServer = servers.find_one({"_id": ctx.guild.id})
     text_channel_n = thisServer["text_channel"]
@@ -151,20 +177,21 @@ async def registerLockoutBot(ctx, mention: str):
     id = mention[2:-1]
     if (id.isnumeric() and ctx.guild.get_member(int(id)) != None):
         embed = discord.Embed(
-            title = "Lockout Bot Registered",
-            description = f"{mention} registered successfully as Lockout Bot.",
-            color = discord.Color.gold()
+            title="Lockout Bot Registered",
+            description=f"{mention} registered successfully as Lockout Bot.",
+            color=discord.Color.gold()
         )
         servers.update_one({"_id": ctx.guild.id}, {"$set": {"lockout_bot": int(id)}})
-        await text_channel.send(embed = embed)
+        await text_channel.send(embed=embed)
     else:
         embed = discord.Embed(
-            title = "Not a valid mention",
-            description = "Please enter a valid discord mention to set the Lockout Bot for the server.",
-            color = discord.Color.gold()
+            title="Not a valid mention",
+            description="Please enter a valid discord mention to set the Lockout Bot for the server.",
+            color=discord.Color.gold()
         )
-        embed.set_author(name = botName)
-        await text_channel.send(embed = embed)
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+
 
 @client.command()
 async def registerMe(ctx, seed: int):
@@ -203,7 +230,8 @@ async def registerMe(ctx, seed: int):
             await text_channel.send(embed=embed)
             return
 
-    participantsList.update_one({"server": ctx.guild.id}, {"$push": {"contestants": {"id": ctx.author.id,"seed": seed}}})
+    participantsList.update_one({"server": ctx.guild.id},
+                                {"$push": {"contestants": {"id": ctx.author.id, "seed": seed}}})
 
     embed = discord.Embed(
         title="You are Registered",
@@ -212,6 +240,7 @@ async def registerMe(ctx, seed: int):
     )
     embed.set_author(name=botName)
     await text_channel.send(embed=embed)
+
 
 @client.command()
 async def unregisterMe(ctx):
@@ -242,10 +271,13 @@ async def unregisterMe(ctx):
         if participantsListTemp["contestants"][i]["id"] == ctx.author.id:
             found = True
             ix = i
-        
+
     if found:
         participantsList.delete_one({"server": ctx.guild.id})
-        participantsList.insert_one({"server": ctx.guild.id, "contestants": participantsListTemp["contestants"][:ix] + participantsListTemp["contestants"][ix + 1:]})
+        participantsList.insert_one({"server": ctx.guild.id,
+                                     "contestants": participantsListTemp["contestants"][:ix] + participantsListTemp[
+                                                                                                   "contestants"][
+                                                                                               ix + 1:]})
         embed = discord.Embed(
             title="Unregistered",
             description=f"{ctx.author.mention} you are now unregistered.",
@@ -254,8 +286,6 @@ async def unregisterMe(ctx):
         embed.set_author(name=botName)
         await text_channel.send(embed=embed)
         return
-
-
 
     embed = discord.Embed(
         title="Couldn't Unregister",
