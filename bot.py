@@ -1,5 +1,6 @@
+from difflib import Match
 import discord
-import Tillucode as tree
+import Match_Builder
 from discord.ext import commands
 from pymongo import MongoClient
 
@@ -13,11 +14,23 @@ db = cluster['discord-bot']
 servers = db['servers']
 participantsList = db['participantsList']
 matchesList = db['matchesList']
+detailToNode = db['detailToNode']
+newMatchesList = db['newMatchesList']
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix="p!", intents=intents)
 
 botName = "Lockout Bot"
+
+def to_match_builder(ctx):
+    Match_Builder.detail_to_node = detailToNode.find_one({"server": ctx.guild.id})["value"]
+    Match_Builder.matchlist = matchesList.find_one({"server": ctx.guild.id})["value"]
+    Match_Builder.newmatchlist = newMatchesList.find_one({"server": ctx.guild.id})["value"]
+
+def from_match_builder(ctx):
+    detailToNode.update_one({"server": ctx.guild.id}, {"$set": {"value" : Match_Builder.detail_to_node}})
+    matchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : Match_Builder.matchlist}})
+    newMatchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : Match_Builder.newmatchlist}})
 
 
 @client.event
@@ -160,8 +173,43 @@ async def startTourney(ctx):
             color = discord.Color.gold()
         )
         await text_channel.send(embed = embed)
+    elif len(participantsList.find_one({"server": ctx.guild.id})["contestants"]) == 0:
+        embed = discord.Embed(
+            title = "No registrations",
+            description = "No participants registered, cannot start the Tourney. Participants can register using p!registerMe",
+            color = discord.Color.gold()
+        )
+        await text_channel.send(embed = embed)
+    elif len(participantsList.find_one({"server": ctx.guild.id})["contestants"]) == 1:
+        embed = discord.Embed(
+            title = "Single registrant",
+            description = "Cannot start a tourney with a single participant.",
+            color = discord.Color.gold()
+        )
+        await text_channel.send(embed = embed)
     else:
-        #Harsh sir please guide
+        detailToNode.insert_one({"server": ctx.guild.id, "value": {}})
+        matchesList.insert_one({"server": ctx.guild.id, "value": []})
+        newMatchesList.insert_one({"server": ctx.guild.id, "value": []})
+
+        to_match_builder(ctx)
+        Match_Builder.func(participantsList.find_one({"server": ctx.guild.id})["contestants"])
+        from_match_builder(ctx)
+
+        embed = discord.Embed(
+            title = f"Tourney started :D",
+            description = f"The tourney {thisServer['tourney_name']} has been started.",
+            color = discord.Color.gold()
+        )
+        await text_channel.send(embed = embed)
+
+        matches_description = str(Match_Builder.matchlist)
+        embed = discord.Embed(
+            title = "Matches for Round 1",
+            description = matches_description,
+            color = discord.Color.gold()
+        )
+        await text_channel.send(embed = embed)
 
 
 @client.command()
