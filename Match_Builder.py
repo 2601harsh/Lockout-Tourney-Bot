@@ -26,8 +26,8 @@ def treefunc(root,data,cround):
             num=pow(2,cround)+1-root.val
             nn1= Node(root.round-1,root.val,data[root.val-1])
             nn2= Node(root.round-1,num,data[num-1])
-            detail_to_node[nn1.detail]=nn1
-            detail_to_node[nn2.detail]=nn2
+            detail_to_node[(nn1.detail['id'],nn1.detail['seed'])]=nn1
+            detail_to_node[(nn2.detail['id'],nn2.detail['seed'])]=nn2
             matchlist.append((nn1.detail,nn2.detail))
             root.p1=nn1
             root.p2=nn2
@@ -37,7 +37,7 @@ def treefunc(root,data,cround):
             #print(nn2.detail['id'],nn2.detail['seed'])
         else:
             root.detail=data[root.val-1]
-            detail_to_node[root.detail]=root
+            detail_to_node[(root.detail['id'],root.detail['seed'])]=root
             #print(root.detail['id'],root.detail['seed'])
 def func(data):
     data.sort(key=comp)
@@ -52,13 +52,13 @@ def func(data):
     head=root
     treefunc(root,data,1)
 def modify_winner(p1,p2,winner):
-    temp1=detail_to_node[p1]
-    temp2=detail_to_node[p2]
+    temp1=detail_to_node[(p1['id'],p1['seed'])]
+    temp2=detail_to_node[(p2['id'],p2['seed'])]
     temp= temp1.par
     temp.detail= winner
-    detail_to_node[p1]=None
-    detail_to_node[p2]=None
-    detail_to_node[winner]=temp
+    detail_to_node[(p1['id'],p1['seed'])]=None
+    detail_to_node[(p2['id'],p2['seed'])]=None
+    detail_to_node[(winner['id'],winner['seed'])]=temp
     temp_par=temp.par
     temp_par_child1=temp_par.p1
     temp_par_child2=temp_par.p2
