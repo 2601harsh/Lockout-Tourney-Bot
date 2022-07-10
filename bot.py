@@ -23,14 +23,14 @@ client = commands.Bot(command_prefix="p!", intents=intents)
 botName = "Lockout Bot"
 
 def to_match_builder(ctx):
-    Match_Builder.detail_to_node = detailToNode.find_one({"server": ctx.guild.id})["value"]
-    Match_Builder.matchlist = matchesList.find_one({"server": ctx.guild.id})["value"]
-    Match_Builder.newmatchlist = newMatchesList.find_one({"server": ctx.guild.id})["value"]
+    Match_Builder.detail_to_node = dict(detailToNode.find_one({"server": ctx.guild.id})["value"])
+    Match_Builder.matchlist = list(matchesList.find_one({"server": ctx.guild.id})["value"])
+    Match_Builder.newmatchlist = list(newMatchesList.find_one({"server": ctx.guild.id})["value"])
 
 def from_match_builder(ctx):
-    detailToNode.update_one({"server": ctx.guild.id}, {"$set": {"value" : Match_Builder.detail_to_node}})
-    matchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : Match_Builder.matchlist}})
-    newMatchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : Match_Builder.newmatchlist}})
+    detailToNode.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.detail_to_node)}})
+    matchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.matchlist)}})
+    newMatchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.newmatchlist)}})
 
 
 @client.event
@@ -153,6 +153,9 @@ async def stopTourney(ctx):
         embed.set_author(name=botName)
         servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name": "--"}})
         participantsList.delete_one({"server": ctx.guild.id})
+        matchesList.delete_one({"server": ctx.guild.id})
+        newMatchesList.delete_one({"server": ctx.guild.id})
+        detailToNode.delete_one({"server": ctx.guild.id})
         await text_channel.send(embed=embed)
 
 
@@ -203,7 +206,7 @@ async def startTourney(ctx):
         )
         await text_channel.send(embed = embed)
 
-        matches_description = str(Match_Builder.matchlist)
+        matches_description = '\n'.join([f"<@{ele[0]['id']}> vs <@{ele[1]['id']}>" for ele in Match_Builder.matchlist])
         embed = discord.Embed(
             title = "Matches for Round 1",
             description = matches_description,
