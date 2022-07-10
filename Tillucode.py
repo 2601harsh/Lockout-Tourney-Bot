@@ -1,4 +1,6 @@
-play={}
+detail_to_node={}
+matchlist=[]
+newmatchlist=[]
 class Node:
    def __init__(self, round, val, detail):
       self.p1 = None
@@ -13,7 +15,6 @@ def treefunc(root,data,cround):
     if root.round > 2:
         nn1= Node(root.round-1,root.val,None)
         nn2= Node(root.round-1,pow(2,cround)+1-root.val,None)
-        play[(nn1,nn2)]=root
         root.p1=nn1
         root.p2=nn2
         nn1.par=root
@@ -25,6 +26,9 @@ def treefunc(root,data,cround):
             num=pow(2,cround)+1-root.val
             nn1= Node(root.round-1,root.val,data[root.val-1])
             nn2= Node(root.round-1,num,data[num-1])
+            detail_to_node[nn1.detail]=nn1
+            detail_to_node[nn2.detail]=nn2
+            matchlist.append((nn1.detail,nn2.detail))
             root.p1=nn1
             root.p2=nn2
             nn1.par=root
@@ -33,6 +37,7 @@ def treefunc(root,data,cround):
             #print(nn2.detail['id'],nn2.detail['seed'])
         else:
             root.detail=data[root.val-1]
+            detail_to_node[root.detail]=root
             #print(root.detail['id'],root.detail['seed'])
 def func(data):
     data.sort(key=comp)
@@ -47,15 +52,19 @@ def func(data):
     head=root
     treefunc(root,data,1)
 def modify_winner(p1,p2,winner):
-    temp= play.get((p1,p2))
-    if temp == None:
-        return temp
-    else:
-        temp.detail= winner.detail
-        del play[(p1,p2)]
-        temp2= temp.par
-        t1= temp2.p1
-        t2= temp2.p2
-        play[(t1,t2)]=temp2
-        temp.p1=None
-        temp.p2=None
+    temp1=detail_to_node[p1]
+    temp2=detail_to_node[p2]
+    temp= temp1.par
+    temp.detail= winner
+    detail_to_node[p1]=None
+    detail_to_node[p2]=None
+    detail_to_node[winner]=temp
+    temp_par=temp.par
+    temp_par_child1=temp_par.p1
+    temp_par_child2=temp_par.p2
+    newmatchlist.append((temp_par_child1.detail,temp_par_child2.detail))
+    temp.p1=None
+    temp.p2=None
+def change_round():
+    matchlist= newmatchlist
+    newmatchlist.clear()
