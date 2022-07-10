@@ -62,7 +62,8 @@ def modify_winner(p1,p2,winner):
     temp_par=temp.par
     temp_par_child1=temp_par.p1
     temp_par_child2=temp_par.p2
-    newmatchlist.append((temp_par_child1.detail,temp_par_child2.detail))
+    if ((temp_par_child1 != None) and (temp_par_child2 != None)):
+        newmatchlist.append((temp_par_child1.detail,temp_par_child2.detail))
     temp.p1=None
     temp.p2=None
 def change_round():
