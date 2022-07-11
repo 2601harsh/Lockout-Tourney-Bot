@@ -23,9 +23,9 @@ client = commands.Bot(command_prefix="p!", intents=intents)
 botName = "Tourney Bot"
 
 def to_match_builder(ctx):
-    Match_Builder.detail_to_node = dict(detailToNode.find_one({"server": ctx.guild.id})["value"])
-    Match_Builder.matchlist = list(matchesList.find_one({"server": ctx.guild.id})["value"])
-    Match_Builder.newmatchlist = list(newMatchesList.find_one({"server": ctx.guild.id})["value"])
+    #Match_Builder.detail_to_node = eval(detailToNode.find_one({"server": ctx.guild.id})["value"])
+    Match_Builder.matchlist = eval(matchesList.find_one({"server": ctx.guild.id})["value"])
+    Match_Builder.newmatchlist = eval(newMatchesList.find_one({"server": ctx.guild.id})["value"])
 
 def from_match_builder(ctx):
     detailToNode.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.detail_to_node)}})
@@ -36,6 +36,7 @@ def from_match_builder(ctx):
 @client.event
 async def on_message(message):
     thisServer = servers.find_one({"_id": message.guild.id})
+    
     if(thisServer["lockout_bot"] == int(message.author.id)):
 
         text_channel_n = thisServer["text_channel"]
@@ -44,24 +45,39 @@ async def on_message(message):
             if x.id == text_channel_n:
                 text_channel = x
 
-        embed = discord.Embed(
-            title="hi",
-            description="hello",
-            color=discord.Color.gold()
-        )
-        print(message.embeds[0].description)
-        print(message.mentions)
-        print(message.content)
-        print(message.attachments)
-        for ele in message.attachments:
-            print(ele)
-        # embed = discord.Embed(
-        #     title = "Content",
-        #     description = message.content,
-        #     color = discord.Color.gold()
-        # )
-        embed.set_author(name=botName)
-        await text_channel.send(embed=embed)
+        if str(message.embeds[0].author)[17:27] == "Match over":
+            yo = str(message.embeds[0].fields[1])
+            j = 0
+            while yo[j] != '@':
+                j += 1
+            j += 1
+
+            first = ""
+            while yo[j] != '>':
+                first = first + yo[j]
+                j += 1
+            first = int(first)
+
+            second = ""
+            j += 5
+            while yo[j] != '>':
+                second = second + yo[j]
+                j += 1
+            second = int(second)
+
+            to_match_builder(message)
+            found = False
+            for match in Match_Builder.matchlist:
+                if (match[0]["id"] == first and match[1]["id"] == second) or (match[0]['id'] == second and match[1]['id'] == first):
+                    found = True
+
+            if (found):
+                embed = discord.Embed(
+                    title = "Match done",
+                    description = f"<@{first}> vs <@{second}>",
+                    color = discord.Color.gold()
+                )
+                await text_channel.send(embed = embed)
     else:
         await client.process_commands(message)
 
@@ -429,5 +445,59 @@ async def unregisterMe(ctx):
     )
     embed.set_author(name=botName)
     await text_channel.send(embed=embed)
+
+
+@client.command()
+async def test(ctx):
+    server_id = ctx.guild.id
+    channel_id = 994953782129598487
+    message_id = 996123675164168362
+
+    server = client.get_guild(server_id)
+    channel = server.get_channel(channel_id)
+    message = await channel.fetch_message(message_id)
+
+    thisServer = servers.find_one({"_id": message.guild.id})
+    if(thisServer["lockout_bot"] == int(message.author.id)):
+
+        text_channel_n = thisServer["text_channel"]
+        global text_channel
+        for x in message.guild.text_channels:
+            if x.id == text_channel_n:
+                text_channel = x
+
+        if str(message.embeds[0].author)[17:27] == "Match over":
+            yo = str(message.embeds[0].fields[1])
+            j = 0
+            while yo[j] != '@':
+                j += 1
+            j += 1
+
+            first = ""
+            while yo[j] != '>':
+                first = first + yo[j]
+                j += 1
+            first = int(first)
+
+            second = ""
+            j += 5
+            while yo[j] != '>':
+                second = second + yo[j]
+                j += 1
+            second = int(second)
+
+            to_match_builder(ctx)
+            found = False
+            for match in Match_Builder.matchlist:
+                if (match[0]["id"] == first and match[1]["id"] == second) or (match[0]['id'] == second and match[1]['id'] == first):
+                    found = True
+
+            embed = discord.Embed(
+                title = "Match done",
+                description = f"<@{first}> vs <@{second}>",
+                color = discord.Color.gold()
+            )
+            await text_channel.send(embed = embed)
+
 
 client.run(token)
