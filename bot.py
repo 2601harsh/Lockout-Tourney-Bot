@@ -50,6 +50,11 @@ async def on_message(message):
             color=discord.Color.gold()
         )
         print(message.embeds[0].description)
+        print(message.mentions)
+        print(message.content)
+        print(message.attachments)
+        for ele in message.attachments:
+            print(ele)
         # embed = discord.Embed(
         #     title = "Content",
         #     description = message.content,
