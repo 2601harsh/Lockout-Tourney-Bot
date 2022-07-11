@@ -20,7 +20,7 @@ newMatchesList = db['newMatchesList']
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix="p!", intents=intents)
 
-botName = "Lockout Bot"
+botName = "Tourney Bot"
 
 def to_match_builder(ctx):
     Match_Builder.detail_to_node = dict(detailToNode.find_one({"server": ctx.guild.id})["value"])
@@ -49,9 +49,16 @@ async def on_message(message):
             description="hello",
             color=discord.Color.gold()
         )
+        print(message.embeds[0].description)
+        # embed = discord.Embed(
+        #     title = "Content",
+        #     description = message.content,
+        #     color = discord.Color.gold()
+        # )
         embed.set_author(name=botName)
         await text_channel.send(embed=embed)
-        return
+    else:
+        await client.process_commands(message)
 
 
 @client.event
