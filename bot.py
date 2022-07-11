@@ -34,6 +34,27 @@ def from_match_builder(ctx):
 
 
 @client.event
+async def on_message(message):
+    thisServer = servers.find_one({"_id": message.guild.id})
+    if(thisServer["lockout_bot"] == int(message.author.id)):
+
+        text_channel_n = thisServer["text_channel"]
+        global text_channel
+        for x in message.guild.text_channels:
+            if x.id == text_channel_n:
+                text_channel = x
+
+        embed = discord.Embed(
+            title="hi",
+            description="hello",
+            color=discord.Color.gold()
+        )
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+        return
+
+
+@client.event
 async def on_guild_join(guild):
     res = servers.find_one({"_id": guild.id})
     if res is None:
@@ -105,6 +126,19 @@ async def startRegister(ctx, tourneyName: str):
     for x in ctx.guild.text_channels:
         if x.id == text_channel_n:
             text_channel = x
+
+    if thisServer["lockout_bot"] == 0:
+        embed = discord.Embed(
+            title="No Lockout Bot Found",
+            description=f"No Lockout Bot found to start register, please first invite lockout bot and register"
+                        f"it using p!registerLockoutBot @bot",
+            color=discord.Color.gold()
+        )
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+        return
+
+
     if thisServer["tourney_name"] == "--":
         participantsList.insert_one({"server": ctx.guild.id, "contestants": []})
         servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name": tourneyName}})
@@ -168,6 +202,19 @@ async def startTourney(ctx):
     for x in ctx.guild.text_channels:
         if x.id == text_channel_n:
             text_channel = x
+
+    checkForStartTourney = matchesList.find_one({"server": ctx.guild.id})
+
+    if checkForStartTourney is not None:
+        embed = discord.Embed(
+            title="Tournament Already Started",
+            description="Tounament has already started so nothing can be changed.",
+            color=discord.Color.gold()
+        )
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+        return
+
 
     if thisServer["tourney_name"] == "--":
         embed = discord.Embed(
@@ -253,6 +300,19 @@ async def registerMe(ctx, seed: int):
         if x.id == text_channel_n:
             text_channel = x
 
+    checkForStartTourney=matchesList.find_one({"server":ctx.guild.id})
+
+    if checkForStartTourney is not None:
+        embed = discord.Embed(
+            title="Tournament Already Started",
+            description="Tounament has already started so nothing can be changed.",
+            color=discord.Color.gold()
+        )
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+        return
+
+
     if thisServer["tourney_name"] == "--":
         embed = discord.Embed(
             title="No Tourney",
@@ -302,6 +362,18 @@ async def unregisterMe(ctx):
         if x.id == text_channel_n:
             text_channel = x
 
+    checkForStartTourney = matchesList.find_one({"server": ctx.guild.id})
+
+    if checkForStartTourney is not None:
+        embed = discord.Embed(
+            title="Tournament Already Started",
+            description="Tounament has already started so nothing can be changed.",
+            color=discord.Color.gold()
+        )
+        embed.set_author(name=botName)
+        await text_channel.send(embed=embed)
+        return
+
     if thisServer["tourney_name"] == "--":
         embed = discord.Embed(
             title="No Tourney",
@@ -345,6 +417,5 @@ async def unregisterMe(ctx):
     )
     embed.set_author(name=botName)
     await text_channel.send(embed=embed)
-
 
 client.run(token)
