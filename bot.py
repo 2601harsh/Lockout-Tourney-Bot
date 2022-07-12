@@ -3,6 +3,7 @@ import discord
 import Match_Builder
 from discord.ext import commands
 from pymongo import MongoClient
+from collections import defaultdict as dd
 
 uri = "mongodb+srv://abhinav:sogya@cluster0.mmjoj3r.mongodb.net/discord-bot?retryWrites=true&w=majority"
 token = "OTk0OTUyMTIxODMxMTQ1NTUy.GUSuq6.Pgsl6ma0FqQ2TmP4pgShJxBfAqsGDKvGWaHW_M"
@@ -334,6 +335,47 @@ async def startTourney(ctx):
             color = discord.Color.gold()
         )
         embed.set_author(name=botName)
+        await text_channel.send(embed = embed)
+
+
+@client.command()
+@commands. has_role('Tourney Manager')
+async def currentRound(ctx):
+    thisServer = servers.find_one({"_id": ctx.guild.id})
+    text_channel_n = thisServer["text_channel"]
+    global text_channel
+    for x in ctx.guild.text_channels:
+        if x.id == text_channel_n:
+            text_channel = x
+
+    if nodes.find_one({"server": ctx.guild.id}) != None:
+        finished = dd(lambda: 0)
+        for match in finishedMatches.find_one({"server": ctx.guild.id})["value"]:
+            finished[match] = 1
+
+        desc = ""
+        for match in eval(matchesList.find_one({"server": ctx.guild.id})["value"]):
+            desc += '\n' + f"<@{match[0]['id']}> vs <@{match[1]['id']}> *"
+            if finished[match]:
+                desc += "Finished"
+            else:
+                desc += "Pending"
+            desc += "*"
+        desc = desc[1:]
+
+        embed = discord.Embed(
+            title = "Current Round Match Details",
+            description = desc,
+            color = discord.Color.gold()
+        )
+        embed.set_author(name = botName)
+        await text_channel.send(embed = embed)
+    else:
+        embed = discord.Embed(
+            title = "No Tourney Running",
+            description = "No tourney is currently running, start one by using p!startRegister / p!startTourney",
+            color = discord.Color.gold()
+        )
         await text_channel.send(embed = embed)
 
 
