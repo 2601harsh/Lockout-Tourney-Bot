@@ -33,12 +33,9 @@ def treefunc(root,data,cround):
             root.p2=nn2
             nn1.par=root
             nn2.par=root
-            #print(nn1.detail['id'],nn1.detail['seed'])
-            #print(nn2.detail['id'],nn2.detail['seed'])
         else:
             root.detail=data[root.val-1]
             detail_to_node[(root.detail['id'],root.detail['seed'])]=root
-            #print(root.detail['id'],root.detail['seed'])
 def func(data):
     data.sort(key=comp)
     for x in range(len(data)):
