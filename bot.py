@@ -16,6 +16,8 @@ participantsList = db['participantsList']
 matchesList = db['matchesList']
 detailToNode = db['detailToNode']
 newMatchesList = db['newMatchesList']
+nodes = db['nodes']
+finishedMatches = db['finishedMatches']
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix="p!", intents=intents)
@@ -23,14 +25,16 @@ client = commands.Bot(command_prefix="p!", intents=intents)
 botName = "Tourney Bot"
 
 def to_match_builder(ctx):
-    #Match_Builder.detail_to_node = eval(detailToNode.find_one({"server": ctx.guild.id})["value"])
+    Match_Builder.detail_to_node = eval(detailToNode.find_one({"server": ctx.guild.id})["value"])
     Match_Builder.matchlist = eval(matchesList.find_one({"server": ctx.guild.id})["value"])
     Match_Builder.newmatchlist = eval(newMatchesList.find_one({"server": ctx.guild.id})["value"])
+    Match_Builder.nodes = eval(nodes.find_one({"server": ctx.guild.id})["value"])
 
 def from_match_builder(ctx):
     detailToNode.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.detail_to_node)}})
     matchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.matchlist)}})
     newMatchesList.update_one({"server": ctx.guild.id}, {"$set": {"value" : str(Match_Builder.newmatchlist)}})
+    nodes.update_one({"server": ctx.guild.id}, {"$set": {"value": str(Match_Builder.nodes)}})
 
 
 @client.event
@@ -67,17 +71,53 @@ async def on_message(message):
 
             to_match_builder(message)
             found = False
+            f_match = None
+            for match in finishedMatches.find_one({"server": message.guild.id})["value"]:
+                if (match[0]["id"] == first and match[1]["id"] == second) or (match[0]['id'] == second and match[1]['id'] == first):
+                    found = True
+            if found:
+                return
+
             for match in Match_Builder.matchlist:
                 if (match[0]["id"] == first and match[1]["id"] == second) or (match[0]['id'] == second and match[1]['id'] == first):
                     found = True
+                    f_match = match
 
-            if (found):
+            if found:
                 embed = discord.Embed(
                     title = "Match done",
-                    description = f"<@{first}> vs <@{second}>",
+                    description = f"<@{first}> vs <@{second}>\nWinner - <@{first}>",
                     color = discord.Color.gold()
                 )
+                embed.set_author(name=botName)
+
+                winner = f_match[0]
+                if f_match[0]["id"] != first:
+                    winner = f_match[1]
+                finishedMatches.update_one({"server": message.guild.id}, {"$push": {"value": f_match}})
+                to_match_builder(message)
+                Match_Builder.modify_winner(f_match[0], f_match[1], winner)
+                from_match_builder(message)
+
                 await text_channel.send(embed = embed)
+                if (len(Match_Builder.matchlist) == 1 and len(Match_Builder.newmatchlist) == 0):
+                    embed = discord.Embed(
+                        title = "Tourney Finished",
+                        description = f"The Tourney {thisServer['tourney_name']} has finished with <@{winner['id']}> being the winner :D",
+                        color = discord.Color.green()
+                    )
+                    embed.set_author(name = botName)
+
+                    ctx = message
+                    servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name": "--"}})
+                    participantsList.delete_one({"server": ctx.guild.id})
+                    matchesList.delete_one({"server": ctx.guild.id})
+                    newMatchesList.delete_one({"server": ctx.guild.id})
+                    detailToNode.delete_one({"server": ctx.guild.id})
+                    nodes.delete_one({"server": ctx.guild.id})
+                    finishedMatches.delete_one({"server": ctx.guild.id})
+
+                    await text_channel.send(embed = embed)
     else:
         await client.process_commands(message)
 
@@ -218,6 +258,7 @@ async def stopTourney(ctx):
         matchesList.delete_one({"server": ctx.guild.id})
         newMatchesList.delete_one({"server": ctx.guild.id})
         detailToNode.delete_one({"server": ctx.guild.id})
+        nodes.delete_one({"server": ctx.guild.id})
         await text_channel.send(embed=embed)
 
 
@@ -257,6 +298,7 @@ async def startTourney(ctx):
             description = "No participants registered, cannot start the Tourney. Participants can register using p!registerMe",
             color = discord.Color.gold()
         )
+        embed.set_author(name=botName)
         await text_channel.send(embed = embed)
     elif len(participantsList.find_one({"server": ctx.guild.id})["contestants"]) == 1:
         embed = discord.Embed(
@@ -264,11 +306,14 @@ async def startTourney(ctx):
             description = "Cannot start a tourney with a single participant.",
             color = discord.Color.gold()
         )
+        embed.set_author(name=botName)
         await text_channel.send(embed = embed)
     else:
-        detailToNode.insert_one({"server": ctx.guild.id, "value": {}})
-        matchesList.insert_one({"server": ctx.guild.id, "value": []})
-        newMatchesList.insert_one({"server": ctx.guild.id, "value": []})
+        detailToNode.insert_one({"server": ctx.guild.id, "value": r'{}'})
+        matchesList.insert_one({"server": ctx.guild.id, "value": '[]'})
+        newMatchesList.insert_one({"server": ctx.guild.id, "value": '[]'})
+        finishedMatches.insert_one({"server": ctx.guild.id, "value": []})
+        nodes.insert_one({"server": ctx.guild.id, "value": '[]'})
 
         to_match_builder(ctx)
         Match_Builder.func(participantsList.find_one({"server": ctx.guild.id})["contestants"])
@@ -279,6 +324,7 @@ async def startTourney(ctx):
             description = f"The tourney {thisServer['tourney_name']} has been started.",
             color = discord.Color.gold()
         )
+        embed.set_author(name=botName)
         await text_channel.send(embed = embed)
 
         matches_description = '\n'.join([f"<@{ele[0]['id']}> vs <@{ele[1]['id']}>" for ele in Match_Builder.matchlist])
@@ -287,6 +333,7 @@ async def startTourney(ctx):
             description = matches_description,
             color = discord.Color.gold()
         )
+        embed.set_author(name=botName)
         await text_channel.send(embed = embed)
 
 
@@ -486,18 +533,55 @@ async def test(ctx):
                 j += 1
             second = int(second)
 
-            to_match_builder(ctx)
+            to_match_builder(message)
             found = False
+            f_match = None
+            for match in finishedMatches.find_one({"server": message.guild.id})["value"]:
+                if (match[0]["id"] == first and match[1]["id"] == second) or (match[0]['id'] == second and match[1]['id'] == first):
+                    found = True
+            if found:
+                return
+
             for match in Match_Builder.matchlist:
                 if (match[0]["id"] == first and match[1]["id"] == second) or (match[0]['id'] == second and match[1]['id'] == first):
                     found = True
+                    f_match = match
 
-            embed = discord.Embed(
-                title = "Match done",
-                description = f"<@{first}> vs <@{second}>",
-                color = discord.Color.gold()
-            )
-            await text_channel.send(embed = embed)
+            if found:
+                embed = discord.Embed(
+                    title = "Match done",
+                    description = f"<@{first}> vs <@{second}>\nWinner - <@{first}>",
+                    color = discord.Color.gold()
+                )
+                embed.set_author(name=botName)
+
+                winner = f_match[0]
+                if f_match[0]["id"] != first:
+                    winner = f_match[1]
+                finishedMatches.update_one({"server": message.guild.id}, {"$push": {"value": f_match}})
+                to_match_builder(message)
+                Match_Builder.modify_winner(f_match[0], f_match[1], winner)
+                from_match_builder(message)
+
+                await text_channel.send(embed = embed)
+                if (len(Match_Builder.matchlist) == 1 and len(Match_Builder.newmatchlist) == 0):
+                    embed = discord.Embed(
+                        title = "Tourney Finished",
+                        description = f"The Tourney {thisServer['tourney_name']} has finished with <@{winner['id']}> being the winner :D",
+                        color = discord.Color.green()
+                    )
+                    embed.set_author(name = botName)
+
+                    ctx = message
+                    servers.update_one({"_id": ctx.guild.id}, {"$set": {"tourney_name": "--"}})
+                    participantsList.delete_one({"server": ctx.guild.id})
+                    matchesList.delete_one({"server": ctx.guild.id})
+                    newMatchesList.delete_one({"server": ctx.guild.id})
+                    detailToNode.delete_one({"server": ctx.guild.id})
+                    nodes.delete_one({"server": ctx.guild.id})
+                    finishedMatches.delete_one({"server": ctx.guild.id})
+
+                    await text_channel.send(embed = embed)
 
 
 client.run(token)
