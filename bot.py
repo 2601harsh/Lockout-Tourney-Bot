@@ -1,4 +1,3 @@
-from difflib import Match
 import discord
 import Match_Builder
 from discord.ext import commands
