@@ -65,5 +65,5 @@ def modify_winner(p1,p2,winner):
     nodes[temp]["p2"] = None
 def change_round():
     global matchlist
-    matchlist= newmatchlist
+    matchlist= list(newmatchlist)
     newmatchlist.clear()
