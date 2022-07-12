@@ -7,7 +7,7 @@ def comp(data):
 def treefunc(root,data,cround):
     if nodes[root]["round"] > 2:
         nn1 = len(nodes)
-        nodes.append({"p1": None, "p2": None, "par": None, "detail": None, "round": nodes[root]["rount"] - 1, "val": nodes[root]["val"]})
+        nodes.append({"p1": None, "p2": None, "par": None, "detail": None, "round": nodes[root]["round"] - 1, "val": nodes[root]["val"]})
         nn2 = len(nodes)
         nodes.append({"p1": None, "p2": None, "par": None, "detail": None, "round": nodes[root]["round"] - 1, "val": pow(2, cround) + 1 - nodes[root]["val"]})
         nodes[root]["p1"] = nn1
@@ -60,9 +60,10 @@ def modify_winner(p1,p2,winner):
         temp_par_child1 = nodes[temp_par]["p1"]
         temp_par_child2 = nodes[temp_par]["p2"]
         if ((temp_par_child1 != None) and (temp_par_child2 != None)):
-            newmatchlist.append((nodes[temp_par_child1]["detail"],temp_par_child2.detail))
+            newmatchlist.append((nodes[temp_par_child1]["detail"],nodes[temp_par_child2]["detail"]))
     nodes[temp]["p1"] = None
     nodes[temp]["p2"] = None
 def change_round():
+    global matchlist
     matchlist= newmatchlist
     newmatchlist.clear()
