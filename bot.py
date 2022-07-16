@@ -3,8 +3,8 @@ import Match_Builder
 from discord.ext import commands
 from pymongo import MongoClient
 
-uri = "mongodb+srv://abhinav:sogya@cluster0.mmjoj3r.mongodb.net/discord-bot?retryWrites=true&w=majority"
-token = "OTk0OTUyMTIxODMxMTQ1NTUy.GUSuq6.Pgsl6ma0FqQ2TmP4pgShJxBfAqsGDKvGWaHW_M"
+uri = "MONGO_URI"
+token = "BOT_TOKEN"
 
 cluster = MongoClient(uri)
 
