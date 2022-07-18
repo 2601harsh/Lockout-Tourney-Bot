@@ -4,8 +4,7 @@ A discord bot that automates the process of conducting a competitive programming
 
 ## Features: 
 
-### participant 
-### registration
+### participant registration
 ### auto bracket generation
 ### auto match updates
 ### other management features.
@@ -19,6 +18,9 @@ Currently only single elimination is supported but will soon add double eliminat
 ## How to use
 
 
+## tech stack used
+
+Python, Discord.py and MongoDB for databases
 
 
 
