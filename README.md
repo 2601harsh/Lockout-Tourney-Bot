@@ -4,10 +4,10 @@ A discord bot that automates the process of conducting a competitive programming
 
 ## Features: 
 
-### participant registration
-### auto bracket generation
-### auto match updates
-### other management features.
+ - Participant Registration
+ - Auto Bracket Generation
+ - Auto Match Updates
+ - Other management features.
 
 ## Screenshots
 
