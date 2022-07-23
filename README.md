@@ -9,18 +9,26 @@ A discord bot that automates the process of conducting a competitive programming
  - Auto Match Updates
  - Other management features.
 
-## Screenshots!
+## Screenshots + How to use
 
-[Uploading Screenshot 2022-07-23 at 11.42.35 PM.png…]()
+<img width="366" alt="Screenshot 2022-07-24 at 12 03 56 AM" src="https://user-images.githubusercontent.com/87669561/180618455-31aa8dca-4376-4410-8c42-66034ceaee3d.png">
 
-<img width="669" alt="Screenshot 2022-07-23 at 11 43 42 PM" src="https://user-images.githubusercontent.com/87669561/180618384-3c4f07e9-e728-4e65-804b-dcedd588a774.png">
+<img width="766" alt="Screenshot 2022-07-24 at 12 04 34 AM" src="https://user-images.githubusercontent.com/87669561/180618470-bf00aaba-4c16-4c77-a7d9-7204745b71e5.png">
+
+<img width="619" alt="Screenshot 2022-07-24 at 12 05 35 AM" src="https://user-images.githubusercontent.com/87669561/180618536-90763074-63b3-47d2-a85e-d11b72916255.png">
+
+<img width="498" alt="Screenshot 2022-07-24 at 12 05 56 AM" src="https://user-images.githubusercontent.com/87669561/180618546-8171ced1-48c0-40f1-84c5-42ab521ba20c.png">
+
+<img width="483" alt="Screenshot 2022-07-24 at 12 06 34 AM" src="https://user-images.githubusercontent.com/87669561/180618569-c2570cbe-aaa7-4fa6-811f-f5b14492ea82.png">
+
+<img width="680" alt="Screenshot 2022-07-24 at 12 07 33 AM" src="https://user-images.githubusercontent.com/87669561/180618601-62830eaa-84c4-41a7-a673-bef6df0f3c1f.png">
+
+<img width="545" alt="Screenshot 2022-07-24 at 12 07 49 AM" src="https://user-images.githubusercontent.com/87669561/180618606-e8c7ab37-23e5-4018-b6e1-e1817588999c.png">
 
 <img width="848" alt="Screenshot 2022-07-23 at 11 40 37 PM" src="https://user-images.githubusercontent.com/87669561/180618353-66f17191-9eea-4e29-97a2-3ec5c907cbb5.png">
 
 
 Currently only single elimination is supported but will soon add double elimination also.
-
-## How to use
 
 
 ## tech stack used
