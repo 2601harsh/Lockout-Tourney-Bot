@@ -31,7 +31,7 @@ A discord bot that automates the process of conducting a competitive programming
 
 <img width="483" alt="Screenshot 2022-07-24 at 12 06 34 AM" src="https://user-images.githubusercontent.com/87669561/180618569-c2570cbe-aaa7-4fa6-811f-f5b14492ea82.png">
 
-- Scheduled Matches will in current round will be published
+- Scheduled Matches in current round will be published
 
 <img width="680" alt="Screenshot 2022-07-24 at 12 07 33 AM" src="https://user-images.githubusercontent.com/87669561/180618601-62830eaa-84c4-41a7-a673-bef6df0f3c1f.png">
 
@@ -40,10 +40,11 @@ A discord bot that automates the process of conducting a competitive programming
 <img width="848" alt="Screenshot 2022-07-23 at 11 40 37 PM" src="https://user-images.githubusercontent.com/87669561/180618353-66f17191-9eea-4e29-97a2-3ec5c907cbb5.png">
 
 
-Currently only single elimination is supported but will soon add double elimination also.
+Currently only single elimination tournaments is supported but we will soon add double elimination too
 
 
-## tech stack used
+
+## Tech Stack used
 
 Python, Discord.py and MongoDB for databases
 
